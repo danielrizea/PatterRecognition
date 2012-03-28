@@ -1,0 +1,64 @@
+Rizea Daniel-Octavian
+331CA
+
+
+				Tema 3 ASC
+
+
+	Implementare.
+	
+	Pentru oricare dintre tascuri:
+
+	SPU:	Spu-ul o data pornit intra intr-o bucla while si semnalizeaza PPU prin mailbox trimitand cellId-ul sau ca este gata sa primeasca de lucru
+	PPU: 	Trimite prin mailbox adresa unei structuri pe care SPU o solicita prin DMA.
+	
+	SPU:    In functie de tipul de procesare solititata de PPU prin process_data.op_type realizeaza procesarile necesare si intoarce rezultatul prin DMA,
+dupa care la final se reia ciclul, SPU iar semnalizeaza PPU sa primeasca de lucru.
+	PPU: trimite de lucru pana cand epuizeaza taskurile
+	
+	Pentru a sincroniza SPU-urile se foloseste functia SPU wait care asteapta toate spu-urile sa termine
+	La final, dupa sincronizare, PPU poate face merge la datele obtinute de la SPU-uri.
+	
+	Task 1:
+	Fiecare SPU primeste o fasie din poza 80000 pixeli 800x800/8(SPU-uri), realizeaza calcul partial al vectorului hist_equal
+	La final PPU aduna informatia de la SPU-uri
+
+	Se trece la egalizare poza.Fiecare SPU "cere de lucru" si primeste o fasie de 16000 pixeli si vectorul hist_equals pe care face egalizarea si o pune la loc in poza.
+
+	Task 2:
+	Fiecare SPU calculeaza average si stddev si le intoarce prin DMA
+	PPU face merge la stari
+
+	Task 3:
+	FIecare SPU primeste o fasie de poza test si un model si spune daca fasia apartine modelului.
+	PPU decide carui model apartine poza.
+
+	Considerente: 
+			- tema se ruleaza cu o comanda ca in enunt : ./clasificare tigru elefant 8 -l8 -p4 -c test 8
+			- dimeniunea unei fasii W*L < 16000 (pentru a fi mai mica ca maximul de transfer pe DMA)
+			- imaginile trenuie sa se gaseasca in folderul images
+			- tema a fost rulata pe 8 SPU-uri 
+			- constantele folosite sunt definite in utils.h
+
+	Am variat l si p .
+		Observatii. Pentru un l mare l=20 p =10, se pierde din precizie, o poza care este tigru devine elefant
+		            Timpul de rulare  Task1 : 30 mili, Task2: 60 mili, Task 3: 20mili
+
+		            Pentru l=8 si p=4 clasificarea este cea corecta 
+			    Timpul de rulare Task 1: 30 mili(neschimbat, fiecare primeste o fasie de 80000) 						Task 2: 80 mili (numar de stari mai mare) Task3:30 mili (mai multe sari)
+		
+			    Pentru l=4 si p=2 clasificarea este corecta insa timpii de executie sunt mai mari Task2: 100mili Task 3: 40mili
+	
+	Observatie: cu cat scadem l si p obtinem o precizie mai buna insa necesita mai mult timp de calcul.Valori optime l=8 p =4;
+	Am variat si TEST_TIGER_STATE_THRESHOLD, TEST_ELEPH_STATE_THRESHOLD, TIGER_STATE_THRESHOLD, ELEPH_STATE_THRESHOLD, TIGER_PERC, ELEPH_PERC insa cele mai bune rezultate se obtin pentru cele date in codul serial.
+
+ TEST_TIGER_STATE_THRESHOLD 0.37
+ TEST_ELEPH_STATE_THRESHOLD 0.37
+ TIGER_STATE_THRESHOLD 0.80
+ ELEPH_STATE_THRESHOLD 0.73
+ TIGER_PERC 0.17
+ ELEPH_PERC 0.17
+ 			
+		
+				  
+
